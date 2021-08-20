@@ -1,180 +1,67 @@
 'use strict';
 
-var allProductNames = ['bag', 'banana', 'bathroom', 'boots', 'breakfast', 'bubblegum', 'chair', 'cthulhu', 'dog-duck', 'dragon', 'pen', 'pet-sweep', 'scissors', 'shark', 'sweep', 'tauntaun', 'unicorn', 'usb', 'water-can', 'wine-glass'];
-var allProductSrc = ['assets/bag.jpg', 'assets/banana.jpg', 'assets/bathroom.jpg', 'assets/boots.jpg', 'assets/breakfast.jpg', 'assets/bubblegum.jpg', 'assets/chair.jpg', 'assets/cthulhu.jpg', 'assets/dog-duck.jpg', 'assets/dragon.jpg', 'assets/pen.jpg', 'assets/pet-sweep.jpg', 'assets/scissors.jpg', 'assets/shark.jpg', 'assets/sweep.png', 'assets/tauntaun.jpg', 'assets/unicorn.jpg', 'assets/usb.gif', 'assets/water-can.jpg', 'assets/wine-glass.jpg'];
-
-var productContainer = document.getElementById('allProducts');
-var buttonLinks = document.getElementById('buttonLinks');
-var stats = document.getElementById('stats');
-var chartContainer = document.getElementById('chartContainer');
-
-var leftImgTag = document.getElementById('left');
-var middleImgTag = document.getElementById('center');
-var rightImgTag = document.getElementById('right');
-
-var totalClicks = 0;
-//holds all products instantiated
-Product.allProducts = [];
-//holds 6 values
-Product.checkDupes = [];
-
-// //store products already on the page
-var leftProduct = null;
-var middleProduct = null;
-var rightProduct = null;
-
-function Product(name, src) {
-  this.name = name;
-  this.src = src;
-  this.clicks = 0;
-  this.timesShown = 0;
-  Product.allProducts.push(this);
-}
-
-function instantiateProducts () {
-  for(var i = 0; i < allProductNames.length; i++) {
-    new Product(allProductNames[i], allProductSrc[i]);
-  }
-}
-
-function randomNumber() {
-  return Math.floor(Math.random() * Product.allProducts.length);
-}
-
-function displayProducts() {
-  //generate array of random # that correlates with each index
-  while (Product.checkDupes.length < 6) {
-    var number = randomNumber();
-    //if the number is not in the array, then that image has not been shown,
-    //so push the number into the array
-    if (!Product.checkDupes.includes(number)) {
-      Product.checkDupes.push(number);
-    }
-    //do this until the array is at 6 numbers again
-    //all 6 numbers are unique
-  }
-  leftImgTag.src = Product.allProducts[Product.checkDupes[0]].src;
-  Product.allProducts[Product.checkDupes[0]].timesShown++;
-  leftProduct = Product.allProducts[Product.checkDupes[0]];
-
-  middleImgTag.src = Product.allProducts[Product.checkDupes[1]].src;
-  Product.allProducts[Product.checkDupes[1]].timesShown++;
-  middleProduct = Product.allProducts[Product.checkDupes[1]];
-
-  rightImgTag.src = Product.allProducts[Product.checkDupes[2]].src;
-  Product.allProducts[Product.checkDupes[2]].timesShown++;
-  rightProduct = Product.allProducts[Product.checkDupes[2]];
-
-  //only keep the last 3 numbers because the first 3 have been used
-  //these 3 nums will now be at the beginning of checkDupes
-  Product.checkDupes = Product.checkDupes.slice(3, 6);
-}
-
-function renderStats() {
-  var h1El = document.createElement('h1');
-  h1El.textContent = 'Stats';
-  stats.appendChild(h1El);
-
-  var buttonEl = document.createElement('a');
-  buttonEl.textContent = 'Stats';
-  buttonEl.setAttribute('class', 'btn');
-  buttonEl.href = '#statsContainer';
-  buttonLinks.appendChild(buttonEl);
-
-  for (var i = 0; i < Product.allProducts.length; i++) {
-    var liEl = document.createElement('li');
-    liEl.textContent = Product.allProducts[i].clicks + ' votes for ' + Product.allProducts[i].name;
-    stats.appendChild(liEl);
-  }
-}
-
-function renderChart() {
-  var canvasEl = document.createElement('canvas');
-  canvasEl.setAttribute = ('id', 'productChart');
-  chartContainer.style.width = '500px';
-  chartContainer.style.height = '500px';
-  chartContainer.appendChild(canvasEl);
-
-  var buttonEl = document.createElement('a');
-  buttonEl.textContent = 'Chart';
-  buttonEl.setAttribute('class', 'btn');
-  buttonEl.href = '#chartContainer';
-  buttonLinks.appendChild(buttonEl);
-
-  var ctx = canvasEl.getContext('2d');
-  var votes = [];
-  var names = [];
-  for(var i = 0; i < Product.allProducts.length; i++) {
-    votes[i] = Product.allProducts[i].clicks;
-    names[i] = Product.allProducts[i].name;
-  }
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: names,
-      datasets: [{
-        data: votes,
-        label: 'Votes',
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      title: {
-        display: true,
-        text: 'Votes Per Product',
-        fontSize: 50
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-            stepSize: 1
-          }
-        }]
-      }
-    }
-  });
-}
-
-function checkStorage () {
-  if(localStorage.setProducts) {
-    var stringifyProducts = localStorage.getItem('setProducts');
-    Product.allProducts = JSON.parse(stringifyProducts);
-  } else {
-    instantiateProducts();
-  }
-}
-
-var handleClick = function(event) {
-  if (event.target === productContainer) {
-    return alert('click on an image, please');
-  }
-  totalClicks++;
-  var clickedProduct = event.target;
-  var id = clickedProduct.id;
-  if (id === 'left') {
-    leftProduct.clicks++;
-  }
-  if (id === 'center') {
-    middleProduct.clicks++;
-  }
-  if (id === 'right') {
-    rightProduct.clicks++;
-  }
-
-  if(totalClicks === 25) {
-    productContainer.removeEventListener('click', handleClick);
-    renderStats();
-    renderChart();
-    localStorage.setItem('setProducts', JSON.stringify(Product.allProducts));
-  }
-  displayProducts();
+// Cart constructor.
+const Cart = function(items) {
+    // this.items is an array of CartItem instances.
+    this.items = items;
 };
 
-checkStorage();
-displayProducts();
+Cart.prototype.addItem = function(product, quantity) {
+    // DONE (probably): Fill in this instance method to create a new CartItem and add it to this.items
+    this.items.push(new CartItem(product, quantity));
+};
 
-productContainer.addEventListener('click', handleClick);
+Cart.prototype.saveToLocalStorage = function() {
+    // DONE: Fill in this instance method to save the contents of the cart to localStorage
+    window.localStorage.setItem('cart', JSON.stringify(this));
+};
+
+Cart.prototype.removeItem = function(itemToRemove) {
+    // DONE: Fill in this instance method to remove one item from the cart.
+    // Note: You will have to decide what kind of parameter to pass in here!
+    for (let i = 0; i < this.items.length; i++) {
+        if (this.items[i].product === itemToRemove.product) {
+            this.items.splice(i, 1);
+        }
+    }
+};
+
+const CartItem = function(product, quantity) {
+    this.product = product;
+    this.quantity = quantity;
+};
+
+// Product contructor.
+const Product = function(filePath, name) {
+    this.filePath = filePath;
+    this.name = name;
+    Product.allProducts.push(this);
+};
+
+Product.allProducts = [];
+
+function generateCatalog() {
+    new Product('assets/bag.jpg', 'Bag');
+    new Product('assets/banana.jpg', 'Banana');
+    new Product('assets/bathroom.jpg', 'Bathroom');
+    new Product('assets/boots.jpg', 'Boots');
+    new Product('assets/breakfast.jpg', 'Breakfast');
+    new Product('assets/bubblegum.jpg', 'Bubblegum');
+    new Product('assets/chair.jpg', 'Chair');
+    new Product('assets/cthulhu.jpg', 'Cthulhu');
+    new Product('assets/dog-duck.jpg', 'Dog-Duck');
+    new Product('assets/dragon.jpg', 'Dragon');
+    new Product('assets/pen.jpg', 'Pen');
+    new Product('assets/pet-sweep.jpg', 'Pet Sweep');
+    new Product('assets/scissors.jpg', 'Scissors');
+    new Product('assets/shark.jpg', 'Shark');
+    new Product('assets/sweep.png', 'Sweep');
+    new Product('assets/tauntaun.jpg', 'Taun-Taun');
+    new Product('assets/unicorn.jpg', 'Unicorn');
+    new Product('assets/usb.gif', 'USB');
+    new Product('assets/water-can.jpg', 'Water Can');
+    new Product('assets/wine-glass.jpg', 'Wine Glass');
+}
+
+// Initialize the app by creating the big list of products with images and names
+generateCatalog();
